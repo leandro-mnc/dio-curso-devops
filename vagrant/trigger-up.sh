@@ -12,7 +12,6 @@ if [ $NODE = "node01" ]; then
   docker service create --name meu-app --replicas 12 -p 80:80 --mount type=volume,src=app,dst=/app/ -dt webdevops/php-apache:7.2
 else
   # Mount dir
-  mount "$(cat "$WORKDIR/ip-server"):/var/lib/docker/volumes/app/_data /var/lib/docker/volumes/app/_data"
+  showmount -e $(cat "$WORKDIR/ip-server.log")
+  sudo mount $(cat "$WORKDIR/ip-server.log"):/var/lib/docker/volumes/app/_data /var/lib/docker/volumes/app/_data
 fi
-
-echo "$NODE has a ip address $IP_ADDR\n"

@@ -1,3 +1,5 @@
 .idea/
 .vagrant/
 vagrant/app/*.php
+vagrant/swarm.sh
+**/*.log

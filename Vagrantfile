@@ -1,8 +1,8 @@
 machines = {
-  "node01" => {"memory" => "1024", "cpu" => "1", "image" => "bento/ubuntu-22.04"},
-  "node02" => {"memory" => "1024", "cpu" => "1", "image" => "bento/ubuntu-22.04"},
-  "node03" => {"memory" => "1024", "cpu" => "1", "image" => "bento/ubuntu-22.04"},
-  "node04" => {"memory" => "1024", "cpu" => "1", "image" => "bento/ubuntu-22.04"}
+  "master" => {"memory" => "1024", "cpu" => "1", "ip" => "200", "image" => "bento/ubuntu-22.04"},
+  "node01" => {"memory" => "1024", "cpu" => "1", "ip" => "201", "image" => "bento/ubuntu-22.04"},
+  "node02" => {"memory" => "1024", "cpu" => "1", "ip" => "202", "image" => "bento/ubuntu-22.04"},
+  "node03" => {"memory" => "1024", "cpu" => "1", "ip" => "203", "image" => "bento/ubuntu-22.04"}
 }
 
 Vagrant.configure("2") do |config|
@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "#{name}" do |machine|
       machine.vm.box = "#{conf["image"]}"
       machine.vm.hostname = "#{name}"
-      machine.vm.network "public_network", bridge: "enp4s0"
+      machine.vm.network "public_network", bridge: "enp4s0", ip: "10.0.0.#{conf["ip"]}"
       machine.vm.synced_folder "vagrant", "/vagrant"
       machine.vm.provider "virtualbox" do |vb|
         vb.name = "#{name}"
@@ -23,11 +23,14 @@ Vagrant.configure("2") do |config|
       end
 
       machine.vm.provision "shell",
-        inline: "/bin/sh /vagrant/install.sh #{name}"
+        inline: "/bin/sh /vagrant/docker.sh #{name}"
 
-      machine.trigger.after :up do |trigger|
-        trigger.run_remote = {inline: "/bin/sh /vagrant/trigger-up.sh #{name}"}
+      if "#{name}" == "master" then
+        machine.vm.provision "shell", inline: "/bin/sh /vagrant/master.sh #{name}"
+      else
+        machine.vm.provision "shell", inline: "/bin/sh /vagrant/worker.sh"
       end
+
     end
   end
 
